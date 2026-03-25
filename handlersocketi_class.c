@@ -2,7 +2,7 @@
 #include "php.h"
 #include "php_ini.h"
 #include "php_streams.h"
-#include "ext/standard/php_smart_string.h"
+#include "Zend/zend_smart_string.h"
 #include "Zend/zend_exceptions.h"
 
 #include "php_verdep.h"
@@ -189,22 +189,20 @@ static inline zend_object *hs_object_new(zend_class_entry *ce)
 	return hs_object_new_ex(ce, NULL);
 }
 
-static inline zend_object *hs_object_clone(zval *this_ptr)
+static inline zend_object *hs_object_clone(zend_object *object)
 {
 	hs_obj_t *new_obj = NULL;
-	hs_obj_t *old_obj = php_hs(Z_OBJ_P(this_ptr));
+	hs_obj_t *old_obj = php_hs(object);
 	zend_object *new_ov = hs_object_new_ex(old_obj->std.ce, &new_obj);
 
-	zend_objects_clone_members(new_ov, Z_OBJ_P(this_ptr));
+	zend_objects_clone_members(new_ov, object);
 
 	new_obj->timeout = old_obj->timeout;
 	new_obj->rw_timeout = old_obj->rw_timeout;
 
-	ZVAL_COPY_VALUE(&new_obj->server, &old_obj->server);
-	zval_copy_ctor(&new_obj->server);
+	ZVAL_COPY(&new_obj->server, &old_obj->server);
 
-	ZVAL_COPY_VALUE(&new_obj->auth, &old_obj->auth);
-	zval_copy_ctor(&new_obj->auth);
+	ZVAL_COPY(&new_obj->auth, &old_obj->auth);
 
 	ZVAL_NULL(&new_obj->error);
 	new_obj->hashkey_len = old_obj->hashkey_len;
@@ -502,7 +500,7 @@ ZEND_METHOD(HandlerSocketi, __construct)
 		if (conn) {
 			/* check liveness */
 			if (php_stream_set_option(conn->stream, PHP_STREAM_OPTION_CHECK_LIVENESS, 0, NULL) == PHP_STREAM_OPTION_RETURN_ERR) {
-				hs_conn_dtor(le TSRMLS_CC);
+				hs_conn_dtor(le);
 				conn = NULL;
 			}
 		}

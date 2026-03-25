@@ -16,10 +16,10 @@ PHP_HANDLERSOCKETI_API int handlersocketi_register_exception()
 	zend_class_entry ce;
 
 	INIT_CLASS_ENTRY(ce, "HandlerSocketi_Exception", NULL);
-	hs_ce_exception = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+	hs_ce_exception = zend_register_internal_class_ex(&ce, zend_ce_exception);
 
 	INIT_CLASS_ENTRY(ce, "HandlerSocketi_IO_Exception", NULL);
-	hs_ce_io_exception = zend_register_internal_class_ex(&ce, zend_exception_get_default());
+	hs_ce_io_exception = zend_register_internal_class_ex(&ce, zend_ce_exception);
 	return SUCCESS;
 }
 

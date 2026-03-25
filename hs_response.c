@@ -1,7 +1,7 @@
 
 #include "php.h"
 #include "php_network.h"
-#include "ext/standard/php_smart_string.h"
+#include "Zend/zend_smart_string.h"
 
 #include "hs_common.h"
 #include "hs_response.h"

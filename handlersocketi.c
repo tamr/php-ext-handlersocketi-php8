@@ -38,7 +38,7 @@ void hs_connection_dtor(hs_conn_t *conn)
 	pefree(conn, conn->is_persistent);
 }
 
-void hs_conn_dtor(zend_resource *rsrc TSRMLS_DC) /* {{{ */
+void hs_conn_dtor(zend_resource *rsrc) /* {{{ */
 {
 	hs_conn_t *conn = (hs_conn_t *)rsrc->ptr;
 	hs_connection_dtor(conn);
@@ -52,9 +52,9 @@ ZEND_MINIT_FUNCTION(handlersocketi)
 	le_hs_pconn = zend_register_list_destructors_ex(NULL, hs_conn_dtor, "HandlerSocketi persistent connection", module_number);
 	le_hs_conn = zend_register_list_destructors_ex(hs_conn_dtor, NULL, "HandlerSocketi connection", module_number);
 
-    handlersocketi_register_class(TSRMLS_C);
-    handlersocketi_register_index(TSRMLS_C);
-    handlersocketi_register_exception(TSRMLS_C);
+    handlersocketi_register_class();
+    handlersocketi_register_index();
+    handlersocketi_register_exception();
 
     return SUCCESS;
 }
@@ -74,14 +74,8 @@ ZEND_MINFO_FUNCTION(handlersocketi)
     DISPLAY_INI_ENTRIES();
 }
 
-const zend_function_entry handlersocketi_functions[] = {
-    ZEND_FE_END
-};
-
 zend_module_entry handlersocketi_module_entry = {
-#if ZEND_MODULE_API_NO >= 20010901
     STANDARD_MODULE_HEADER,
-#endif
     "handlersocketi",
     NULL,
     ZEND_MINIT(handlersocketi),
@@ -89,9 +83,7 @@ zend_module_entry handlersocketi_module_entry = {
     NULL, /* ZEND_RINIT(handlersocketi), */
     NULL, /* ZEND_RSHUTDOWN(handlersocketi), */
     ZEND_MINFO(handlersocketi),
-#if ZEND_MODULE_API_NO >= 20010901
     HANDLERSOCKETI_EXT_VERSION,
-#endif
     STANDARD_MODULE_PROPERTIES
 };
 

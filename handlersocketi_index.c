@@ -1,7 +1,7 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "ext/standard/php_smart_string.h"
+#include "Zend/zend_smart_string.h"
 #include "ext/standard/php_string.h"
 #include "zend_exceptions.h"
 
@@ -235,35 +235,29 @@ static inline zend_object *hs_index_object_new(zend_class_entry *ce)
 	return hs_index_object_new_ex(ce, NULL);
 }
 
-static inline zend_object *hs_index_object_clone(zval *this_ptr)
+static inline zend_object *hs_index_object_clone(zend_object *object)
 {
 	hs_index_obj_t *new_obj = NULL;
-	hs_index_obj_t *old_obj = php_hs_index(Z_OBJ_P(this_ptr));
+	hs_index_obj_t *old_obj = php_hs_index(object);
 	zend_object *new_ov = hs_index_object_new_ex(old_obj->std.ce, &new_obj);
 
-	zend_objects_clone_members(new_ov, Z_OBJ_P(this_ptr));
+	zend_objects_clone_members(new_ov, object);
 
 	new_obj->id = old_obj->id;
 
-	ZVAL_COPY_VALUE(&new_obj->name, &old_obj->name);
-	zval_copy_ctor(&new_obj->name);
+	ZVAL_COPY(&new_obj->name, &old_obj->name);
 
-	ZVAL_COPY_VALUE(&new_obj->db, &old_obj->db);
-	zval_copy_ctor(&new_obj->db);
+	ZVAL_COPY(&new_obj->db, &old_obj->db);
 
-	ZVAL_COPY_VALUE(&new_obj->table, &old_obj->table);
-	zval_copy_ctor(&new_obj->table);
+	ZVAL_COPY(&new_obj->table, &old_obj->table);
 
-	ZVAL_COPY_VALUE(&new_obj->field, &old_obj->field);
-	zval_copy_ctor(&new_obj->field);
+	ZVAL_COPY(&new_obj->field, &old_obj->field);
 
 	new_obj->field_num = old_obj->field_num;
 
-	ZVAL_COPY_VALUE(&new_obj->filter, &old_obj->filter);
-	zval_copy_ctor(&new_obj->filter);
+	ZVAL_COPY(&new_obj->filter, &old_obj->filter);
 
-	ZVAL_COPY_VALUE(&new_obj->link, &old_obj->link);
-	zval_copy_ctor(&new_obj->link);
+	ZVAL_COPY(&new_obj->link, &old_obj->link);
 
 	ZVAL_NULL(&new_obj->error);
 
@@ -304,8 +298,7 @@ void hs_zval_to_comma_string(zval *val, zval *retval)
 void hs_zval_to_comma_array(zval *val, zval *retval)
 {
 	if (Z_TYPE_P(val) == IS_ARRAY) {
-		ZVAL_COPY_VALUE(retval, val);
-		zval_copy_ctor(retval);
+		ZVAL_COPY(retval, val);
 	} else if (Z_TYPE_P(val) == IS_STRING) {
 		zval delim;
 		ZVAL_STRINGL(&delim, ",", strlen(","));
@@ -612,8 +605,7 @@ static inline void hs_index_object_init(hs_index_obj_t *hsi, zval *this_ptr, zva
 	hsi->id = id;
 
 	/* name */
-	ZVAL_COPY_VALUE(&hsi->name, &index);
-	zval_copy_ctor(&hsi->name);
+	ZVAL_COPY(&hsi->name, &index);
 
 	/* db */
 	ZVAL_STRINGL(&hsi->db, db, db_len);
@@ -635,13 +627,11 @@ static inline void hs_index_object_init(hs_index_obj_t *hsi, zval *this_ptr, zva
 		zval_ptr_dtor(&delim);
 	} else {
 		hsi->field_num = zend_hash_num_elements(HASH_OF(fields));
-		ZVAL_COPY_VALUE(&hsi->field, fields);
-		zval_copy_ctor(&hsi->field);
+		ZVAL_COPY(&hsi->field, fields);
 	}
 
 	if (Z_TYPE_P(&filter) != IS_NULL) {
-		ZVAL_COPY_VALUE(&hsi->filter, &filter);
-		zval_copy_ctor(&hsi->filter);
+		ZVAL_COPY(&hsi->filter, &filter);
 	} else {
 		array_init(&hsi->filter);
 	}
@@ -909,13 +899,12 @@ ZEND_METHOD(HandlerSocketi_Index, insert)
 	long fnum = 0;
 	int argc;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "+", &args, &argc) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "+", &args, &argc) == FAILURE) {
 		return;
 	}
 
 	if (Z_TYPE_P(&args[0]) == IS_ARRAY) {
-		ZVAL_COPY_VALUE(&fields, &args[0]);
-		zval_copy_ctor(&fields);
+		ZVAL_COPY(&fields, &args[0]);
 	} else {
 		array_init(&fields);
 
